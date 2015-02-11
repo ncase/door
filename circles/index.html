@@ -1,0 +1,28 @@
+<!doctype>
+<html>
+<head>
+	<title>A Door-Key Game</title>
+	<style>body{ margin:0; }</style>
+</head>
+<body>
+	<canvas id="canvas" width="300" height="300" style="border:1px solid #333"></canvas>
+</body>
+</html>
+
+<script src="Key.js"></script>
+<script src="index.js"></script>
+<script>
+window.LEVEL_CONFIG = {
+	canvas:document.getElementById("canvas"),
+	player:{
+		x:150, y:250
+	},
+	circles: [
+		{x:100,y:100,radius:50},
+		{x:200,y:100,radius:50},
+		{x:150,y:100,radius:10,invisible:true},
+		{x:-25,y:100,radius:50},
+		{x:325,y:100,radius:50},
+	]
+};
+</script>
