@@ -28,19 +28,51 @@ function Level(config){
 
 	self.circles = config.circles;
 	self.player = new Peep(config.player,self);
+	self.key = new DoorKey(config.key, self);
+	self.door = new Door(config.door, self);
+	self.clock = new Clock(config.countdown, self);
+
 	self.canvas = config.canvas;
 	self.ctx = self.canvas.getContext('2d');
+	self.width = self.canvas.width;
+	self.height = self.canvas.height - 80;
 
+	self.pathCanvas = document.createElement("canvas");
+	self.pathCanvas.width = self.width;
+	self.pathCanvas.height = self.height;
+	self.pathContext = self.pathCanvas.getContext('2d');
+	self.DRAW_PATH = false;
+
+	self.keyCollected = false;
 	self.update = function(){
+		
 		self.player.update();
+		self.key.update();
+
+		var output = self.door.update();
+		if(output!="END_LEVEL"){
+			self.clock.update();
+		}
+
+		self.recordFrame();
+
 	};
 
+	self.drawPathLastPoint = null;
 	self.draw = function(){
 
 		var ctx = self.ctx;
 
 		// Clear
-		ctx.clearRect(0,0,canvas.width,canvas.height);
+		ctx.fillStyle = "#fff";
+		ctx.clearRect(0,self.height,self.canvas.width,80);
+		ctx.fillRect(0,0,self.width,self.height);
+
+		// Draw shadows
+		var objects = [self.player,self.key,self.door];
+		for(var i=0;i<objects.length;i++){
+			objects[i].drawShadow(ctx);
+		}
 
 		// Draw circles
 		ctx.fillStyle = '#333';
@@ -52,8 +84,234 @@ function Level(config){
 			ctx.fill();
 		}
 
-		// Draw Peep
-		self.player.draw(ctx);
+		// Draw Peep, Key, Door in depth
+		objects.sort(function(a,b){ return a.y - b.y; });
+		for(var i=0;i<objects.length;i++){
+			objects[i].draw(ctx);
+		}
+
+		// Draw path?
+		if(self.DRAW_PATH){
+			ctx.drawImage(self.pathCanvas,0,0);
+
+			if(!self.drawPathLastPoint){
+				self.drawPathLastPoint = {
+					x: self.player.x-0.1,
+					y: self.player.y
+				};
+			}
+
+			var pctx = self.pathContext;
+			pctx.beginPath();
+			pctx.strokeStyle = "#cc2727";
+			pctx.lineWidth = 10;
+			pctx.lineCap = "round";
+			pctx.lineJoin = "round";
+			pctx.moveTo(self.drawPathLastPoint.x, self.drawPathLastPoint.y);
+			pctx.lineTo(self.player.x, self.player.y);
+			pctx.stroke();
+	
+			self.drawPathLastPoint = {
+				x: self.player.x,
+				y: self.player.y
+			};
+
+		}
+
+		// CLOCK
+		self.clock.draw(ctx);
+
+	};
+
+	self.frames = [];
+	self.recordFrame = function(){
+		
+		var frame = {
+			player:{
+				x: self.player.x,
+				y: self.player.y,
+				sway: self.player.sway,
+				bounce: self.player.bounce,
+				frame: self.player.frame,
+				direction: self.player.direction
+			},
+			key:{
+				hover: self.key.hover
+			},
+			door:{
+				frame: self.door.frame
+			},
+			keyCollected: self.keyCollected
+		};
+
+		self.frames.push(frame);
+
+	}
+	self.playbackFrame = function(frameIndex){
+
+		var frame = self.frames[frameIndex];
+
+		self.player.x = frame.player.x;
+		self.player.y = frame.player.y;
+		self.player.sway = frame.player.sway;
+		self.player.bounce = frame.player.bounce;
+		self.player.frame = frame.player.frame;
+		self.player.direction = frame.player.direction;
+
+		self.key.hover = frame.key.hover;
+		self.door.frame = frame.door.frame;
+
+		self.keyCollected = frame.keyCollected;
+
+		self.draw();
+
+	}
+
+}
+
+//////////////
+
+function Clock(countdown,level){
+
+	var self = this;
+	self.level = level;
+	self.framePerTick = 30/countdown;
+
+	self.update = function(){
+		self.frame += self.framePerTick;
+		if(self.frame>=30){
+			reset();
+		}
+	};
+
+	self.frame = 0;
+	self.draw = function(ctx){
+
+		ctx.save();
+		ctx.translate(level.width/2,level.height+40);
+
+		var f = Math.floor(self.frame);
+		var sw = 82;
+		var sh = 82;
+		var sx = (f*sw) % images.clock.width;
+		var sy = sh*Math.floor((f*sw)/images.clock.width);
+		ctx.drawImage(images.clock, sx,sy,sw,sh, -30,-30,60,60);
+		ctx.restore();
+
+	};
+
+}
+
+function DoorKey(config,level){
+
+	var self = this;
+	self.level = level;
+
+	self.x = config.x;
+	self.y = config.y;
+
+	self.hover = 0;
+	self.update = function(){
+
+		if(level.keyCollected) return;
+
+		self.hover += 0.07;
+
+		var dx = self.x-level.player.x;
+		var dy = self.y-level.player.y;
+		var distance = Math.sqrt(dx*dx/4 + dy*dy);
+		if(distance<5){
+			level.keyCollected = true;
+		}
+
+	};
+
+	self.draw = function(ctx){
+
+		if(level.keyCollected) return;
+
+		ctx.save();
+		ctx.translate(self.x, self.y-20-Math.sin(self.hover)*5);
+		ctx.scale(0.7,0.7);
+		ctx.drawImage(images.key,-23,-14,47,28);
+		ctx.restore();
+
+	};
+	self.drawShadow = function(ctx){
+
+		if(level.keyCollected) return;
+
+		ctx.save();
+		ctx.translate(self.x,self.y);
+		ctx.scale(0.7,0.7);
+
+		var scale = 1-Math.sin(self.hover)*0.5;
+		ctx.scale(1*scale,0.3*scale);
+		ctx.beginPath();
+		ctx.arc(0, 0, 15, 0, Math.TAU, false);
+		ctx.fillStyle = '#bbb';
+		ctx.fill();
+		ctx.restore();
+
+	};
+
+}
+
+function Door(config,level){
+
+	var self = this;
+	self.level = level;
+
+	self.x = config.x;
+	self.y = config.y;
+
+	self.update = function(){
+
+		if(level.keyCollected && self.frame<10){
+			self.frame += 0.5;
+		}
+
+		if(level.keyCollected){
+			var dx = self.x-level.player.x;
+			var dy = self.y-level.player.y;
+			var distance = Math.sqrt(dx*dx/25 + dy*dy);
+			if(distance<6){
+				next();
+				return "END_LEVEL";
+			}
+		}
+
+	};
+
+	self.frame = 0;
+	self.draw = function(ctx){
+
+		ctx.save();
+		ctx.translate(self.x,self.y);
+		ctx.scale(0.7,0.7);
+
+		var f = Math.floor(self.frame);
+		var sw = 68;
+		var sh = 96;
+		var sx = (f*sw) % images.door.width;
+		var sy = sh*Math.floor((f*sw)/images.door.width);
+		var dx = -34;
+		var dy = -91;
+		ctx.drawImage(images.door, sx,sy,sw,sh, dx,dy,sw,sh);
+		ctx.restore();
+
+	};
+	self.drawShadow = function(ctx){
+
+		ctx.save();
+		ctx.translate(self.x,self.y);
+		ctx.scale(0.7,0.7);
+		ctx.scale(1,0.2);
+		ctx.beginPath();
+		ctx.arc(0, 0, 30, 0, Math.TAU, false);
+		ctx.fillStyle = '#bbb';
+		ctx.fill();
+		ctx.restore();
 
 	};
 
@@ -112,8 +370,8 @@ function Peep(config,level){
 		// Dealing with colliding into border
 		if(self.x<0) self.x=0;
 		if(self.y<0) self.y=0;
-		if(self.x>level.canvas.width) self.x=level.canvas.width;
-		if(self.y>level.canvas.height) self.y=level.canvas.height;
+		if(self.x>level.width) self.x=level.width;
+		if(self.y>level.height) self.y=level.height;
 
 		// Dealing with collision of circles
 		// Hit a circle? Figure out how deep, then add that vector away from the circle.
@@ -142,12 +400,19 @@ function Peep(config,level){
 
 		}
 
+		// Bouncy & Sway
+		self.sway += swayVel;
+		swayVel += ((-self.vel.x*0.08)-self.sway)*0.2;
+		swayVel *= 0.9;
+		self.bounce += bounceVel;
+		bounceVel += (1-self.bounce)*0.2;
+		bounceVel *= 0.9;
 
 	};
 
-	var bounce = 1;
+	self.bounce = 1;
 	var bounceVel = 0;
-	var sway = 0;
+	self.sway = 0;
 	var swayVel = 0;
 	var bouncy = [0.00, 0.25, 1.00, 0.90, 0.00, 0.25, 1.00, 0.90, 0.00];
 	self.draw = function(ctx){
@@ -155,7 +420,27 @@ function Peep(config,level){
 		var x = self.x;
 		var y = self.y;
 
-		// DRAW SHADOW //
+		// DRAW GOOFY BOUNCY DUDE //
+		
+		y += -4*bouncy[self.frame];
+
+		ctx.save();
+		ctx.translate(x,y);
+		ctx.scale(0.5,0.5);
+
+		ctx.rotate(self.sway);
+		ctx.scale(self.direction,1);///anim.stretch, anim.stretch);
+		ctx.scale(1/self.bounce, self.bounce);
+		//ctx.rotate(anim.rotate*0.15);
+		ctx.drawImage(images.peep,-25,-100,50,100);
+		ctx.restore();
+
+	};
+
+	self.drawShadow = function(ctx){
+
+		var x = self.x;
+		var y = self.y;
 
 		ctx.save();
 		ctx.translate(x,y);
@@ -165,31 +450,8 @@ function Peep(config,level){
 		ctx.scale(1*scale,0.3*scale);
 		ctx.beginPath();
 		ctx.arc(0, 0, 20, 0, Math.TAU, false);
-		ctx.fillStyle = 'rgba(0,0,0,0.2)';
+		ctx.fillStyle = '#bbb';
 		ctx.fill();
-		ctx.restore();
-
-
-		// DRAW GOOFY BOUNCY FUCKER //
-		
-		y += -4*bouncy[self.frame];
-
-		sway += swayVel;
-		swayVel += ((-self.vel.x*0.08)-sway)*0.2;
-		swayVel *= 0.9;
-		bounce += bounceVel;
-		bounceVel += (1-bounce)*0.2;
-		bounceVel *= 0.9;
-
-		ctx.save();
-		ctx.translate(x,y);
-		ctx.scale(0.5,0.5);
-
-		ctx.rotate(sway);
-		ctx.scale(self.direction,1);///anim.stretch, anim.stretch);
-		ctx.scale(1/bounce, bounce);
-		//ctx.rotate(anim.rotate*0.15);
-		ctx.drawImage(images.peep,-25,-100,50,100);
 		ctx.restore();
 
 	};
@@ -206,24 +468,111 @@ window.requestAnimFrame = window.requestAnimationFrame ||
 window.onload = function(){
 
 	addAsset("peep","peep.png");
+	addAsset("key","key.png");
+	addAsset("door","door.png");
+	addAsset("clock","clock.png");
 
 	onLoadAssets(function(){
 		
-		window.level = new Level(LEVEL_CONFIG);
+		reset();
 
+		var frameDirty = false;
 		function update(){
-			level.update();
+
+			if(STAGE==1){
+				level.update();
+				frameDirty = true;
+			}else if(STAGE==2||STAGE==3){
+				frameDirty = true;
+			}
+
 		}
 		function render(){
-			level.draw();
+
+			if(STAGE==1){
+
+				level.draw();
+
+			}else if(STAGE==2){
+
+				rewindLevel.playbackFrame(rewindFrame);
+				rewindFrame--;
+				if(rewindFrame<0){
+					CURRENT_LEVEL--;
+					if(CURRENT_LEVEL>=0){
+						startRewind();
+					}else{
+						STAGE = 3;
+						CURRENT_LEVEL = 0;
+						startPlayback();
+					}
+				}
+
+			}else if(STAGE==3){
+
+				rewindLevel.playbackFrame(rewindFrame);
+				rewindFrame++;
+				if(rewindFrame>=rewindLevel.frames.length){
+					CURRENT_LEVEL++;
+					if(CURRENT_LEVEL<3){
+						startPlayback();
+					}else{
+						alert("END");
+						STAGE = 4;
+					}
+				}
+
+			}
+
+			frameDirty = false;
+
 		}
 
 		setInterval(update,1000/30);
 		(function animloop(){
 			requestAnimFrame(animloop);
-			render();
+			if(frameDirty) render();
 		})();
 
 	});
 
 };
+
+var STAGE = 1;
+// 0 - Intro
+// 1 - Play levels in order
+// 2 - Rewind levels
+// 3 - Replay levels with path
+// 4 - Goodbye
+
+function next(){
+	CURRENT_LEVEL++;
+	if(CURRENT_LEVEL<LEVEL_CONFIG.length){
+		reset();
+	}else{
+		level = null;
+		STAGE = 2;
+		CURRENT_LEVEL = 2;
+		startRewind();
+	}
+}
+
+var rewindFrame = 0;
+var rewindLevel = null;
+function startRewind(){
+	rewindLevel = levelObjects[CURRENT_LEVEL];
+	rewindFrame = rewindLevel.frames.length-1;
+}
+function startPlayback(){
+	rewindLevel = levelObjects[CURRENT_LEVEL];
+	rewindLevel.DRAW_PATH = true;
+	rewindFrame = 0;
+}
+
+var levelObjects = [];
+var CURRENT_LEVEL = 0;
+function reset(){
+	var lvl = new Level(LEVEL_CONFIG[CURRENT_LEVEL]);
+	levelObjects[CURRENT_LEVEL] = lvl;
+	window.level = lvl;
+}
