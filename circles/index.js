@@ -50,7 +50,9 @@ function Level(config){
 		self.key.update();
 
 		var output = self.door.update();
-		if(output!="END_LEVEL"){
+		if(output=="END_LEVEL"){
+			self.ctx.clearRect(0,self.height,self.canvas.width,80);
+		}else{
 			self.clock.update();
 		}
 
@@ -65,7 +67,6 @@ function Level(config){
 
 		// Clear
 		ctx.fillStyle = "#fff";
-		ctx.clearRect(0,self.height,self.canvas.width,80);
 		ctx.fillRect(0,0,self.width,self.height);
 
 		// Draw shadows
@@ -119,7 +120,8 @@ function Level(config){
 		}
 
 		// CLOCK
-		self.clock.draw(ctx);
+		ctx.clearRect(0,self.height,self.canvas.width,80);
+		if(!self.NO_CLOCK) self.clock.draw(ctx);
 
 	};
 
@@ -163,8 +165,19 @@ function Level(config){
 
 		self.keyCollected = frame.keyCollected;
 
+		self.NO_CLOCK = true;
 		self.draw();
 
+	}
+
+	self.clear = function(){
+		var ctx = self.ctx;
+		ctx.clearRect(0,0,self.canvas.width,self.canvas.height);
+	}
+
+	self.onlyPath = function(){
+		self.clear();
+		self.ctx.drawImage(self.pathCanvas,0,0);
 	}
 
 }
@@ -177,11 +190,38 @@ function Clock(countdown,level){
 	self.level = level;
 	self.framePerTick = 30/countdown;
 
+	var enterSide = null;
+	var exitSide = null;
+
 	self.update = function(){
+
+		// THIS IS TOTALLY A HACK, JUST FOR LEVEL 2
+		// SUBTLY CHEAT - IT'S IMPOSSIBLE TO SOLVE IT THE WRONG WAY
+
+		if(CURRENT_LEVEL==1){
+			if(level.keyCollected){
+				if(!exitSide && Math.abs(level.player.x-150)>30){
+					exitSide = (level.player.x<150) ? "left" : "right";
+				}
+			}else{
+				if(!enterSide && level.player.y<150){
+					enterSide = (level.player.x<150) ? "left" : "right";
+				}
+			}
+			if(exitSide && enterSide){
+				if(exitSide == enterSide){
+					self.frame += self.framePerTick*0.7;
+				}
+			}
+		}
+
+		// Normal update
+
 		self.frame += self.framePerTick;
 		if(self.frame>=30){
 			reset();
 		}
+
 	};
 
 	self.frame = 0;
@@ -480,8 +520,10 @@ window.onload = function(){
 		function update(){
 
 			if(STAGE==1){
-				level.update();
-				frameDirty = true;
+				if(level){
+					level.update();
+					frameDirty = true;
+				}
 			}else if(STAGE==2||STAGE==3){
 				frameDirty = true;
 			}
@@ -491,7 +533,11 @@ window.onload = function(){
 
 			if(STAGE==1){
 
-				level.draw();
+				if(level){
+					level.draw();
+				}
+
+				frameDirty = false;
 
 			}else if(STAGE==2){
 
@@ -517,14 +563,14 @@ window.onload = function(){
 					if(CURRENT_LEVEL<3){
 						startPlayback();
 					}else{
-						alert("END");
+						iHeartYou();
 						STAGE = 4;
 					}
 				}
 
-			}
+				frameDirty = false;
 
-			frameDirty = false;
+			}
 
 		}
 
@@ -543,18 +589,51 @@ var STAGE = 1;
 // 1 - Play levels in order
 // 2 - Rewind levels
 // 3 - Replay levels with path
-// 4 - Goodbye
+// 4 - I HEART YOU
+// 5 - End screen
 
 function next(){
 	CURRENT_LEVEL++;
 	if(CURRENT_LEVEL<LEVEL_CONFIG.length){
-		reset();
+
+		var lvl = new Level(LEVEL_CONFIG[CURRENT_LEVEL]);
+		levelObjects[CURRENT_LEVEL] = lvl;
+		window.level = null;
+		setTimeout(function(){
+			window.level = lvl;
+		},500);
+
 	}else{
 		level = null;
 		STAGE = 2;
 		CURRENT_LEVEL = 2;
 		startRewind();
 	}
+}
+
+function iHeartYou(){
+	
+	for(var i=0; i<levelObjects.length; i++) {
+		levelObjects[i].onlyPath();
+	}
+
+	document.getElementById("canvas_container").style.backgroundPosition = "0px -390px";
+	document.getElementById("screen_two").style.background = "#000";
+	
+	var can_cont_text = document.getElementById("canvas_container_text");
+
+	var vtext = document.getElementById("valentines_text");
+	vtext.style.display = "block";
+	document.getElementById("valentines_from").textContent = "nicky";
+	document.getElementById("valentines_to").textContent = "(recipient)";
+
+	setTimeout(function(){
+		vtext.style.letterSpacing = "3px";
+	},10);
+
+	// After 9 seconds, swipe down to CREDITS.
+	// No replay. Fuck it.
+
 }
 
 var rewindFrame = 0;
@@ -574,5 +653,9 @@ var CURRENT_LEVEL = 0;
 function reset(){
 	var lvl = new Level(LEVEL_CONFIG[CURRENT_LEVEL]);
 	levelObjects[CURRENT_LEVEL] = lvl;
-	window.level = lvl;
+	if(window.level) window.level.clear();
+	window.level = null;
+	setTimeout(function(){
+		window.level = lvl;
+	},500);
 }

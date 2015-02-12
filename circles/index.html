@@ -2,21 +2,26 @@
 <html>
 <head>
 	<title>it's aDOORable</title>
-	<style>
-	body{
-		margin:0;
-		background:#eee;
-	}
-	canvas{
-		float:left;
-		margin-right: 20px;
-	}
-	</style>
+	<link rel="stylesheet" type="text/css" href="index.css"> 
 </head>
 <body>
-	<canvas id="canvas" width="300" height="380"></canvas>
-	<canvas id="canvas_2" width="300" height="380"></canvas>
-	<canvas id="canvas_3" width="300" height="380"></canvas>
+	<div id="screen_two">
+		<div id="canvas_container">
+
+			<canvas id="canvas" width="300" height="380"></canvas>
+			<canvas id="canvas_2" width="300" height="380"></canvas>
+			<canvas id="canvas_3" width="300" height="380" style="margin:0"></canvas>
+			
+			<div id="valentines_text">
+				happy valentine's day, from
+				<span id="valentines_from">nicky</span>
+				to
+				<span id="valentines_to">you</span>
+				&lt;3
+			</div>
+
+		</div>
+	</div>
 </body>
 </html>
 
@@ -48,8 +53,8 @@ window.LEVEL_CONFIG = [
 			{x:100,y:100,radius:50},
 			{x:200,y:100,radius:50},
 			{x:150,y:100,radius:10,invisible:true},
-			{x:-25,y:100,radius:50},
-			{x:325,y:100,radius:50},
+			{x:0-15,y:100,radius:50},
+			{x:300+15,y:100,radius:50},
 		],
 		// SUPER HACK - for level 2, change timer so it's impossible to beat if you go BACKWARDS.
 		countdown: 140
