@@ -507,10 +507,10 @@ window.requestAnimFrame = window.requestAnimationFrame ||
 
 window.onload = function(){
 
-	addAsset("peep","peep.png");
-	addAsset("key","key.png");
-	addAsset("door","door.png");
-	addAsset("clock","clock.png");
+	addAsset("peep","assets/peep.png");
+	addAsset("key","assets/key.png");
+	addAsset("door","assets/door.png");
+	addAsset("clock","assets/clock.png");
 
 	onLoadAssets(function(){
 		
