@@ -17,14 +17,14 @@
 	var onKeyDown = function(event){
 		var code = KEY_CODES[event.keyCode];
 	    Key[code] = true;
-	    if(STAGE==4) return;
+	    if(window.STAGE==4) return;
 	    event.stopPropagation();
 	    event.preventDefault();
 	}
 	var onKeyUp = function(event){
 		var code = KEY_CODES[event.keyCode];
 	    Key[code] = false;
-	    if(STAGE==4) return;
+	    if(window.STAGE==4) return;
 	    event.stopPropagation();
 	    event.preventDefault();
 	}

@@ -8,7 +8,7 @@ var onLoadAssets = function(callback){
 	if(assetsLeft==0) assetsCallback();
 };
 var assetsLeft = 0;
-var onImageLoaded = function(){
+var onAssetLoaded = function(){
 	assetsLeft--;
 	if(assetsLeft==0) assetsCallback();
 };
@@ -16,8 +16,13 @@ var images = {};
 function addAsset(name,src){
 	assetsLeft++;
 	images[name] = new Image();
-	images[name].onload = onImageLoaded;
+	images[name].onload = onAssetLoaded;
 	images[name].src = src;
+}
+function addSound(name,src){
+	assetsLeft++;
+	createjs.Sound.addEventListener("fileload", onAssetLoaded);
+	createjs.Sound.registerSound({src:src, id:name});
 }
 
 //////////////
@@ -74,14 +79,6 @@ function Level(config,isIntro){
 
 		var ctx = self.ctx;
 
-		// Clear
-		if(self.isIntro){
-			ctx.clearRect(0,0,self.width,self.height);
-		}else{
-			ctx.fillStyle = "#fff";
-			ctx.fillRect(0,0,self.width,self.height);
-		}
-
 		// BIGGER EVERYTHING
 		if(self.isIntro){
 			ctx.save();
@@ -89,6 +86,16 @@ function Level(config,isIntro){
 			ctx.scale(introScale,introScale);
 			ctx.translate(-self.width/2,-self.height/2);
 			ctx.translate((self.width/2)/introScale,(self.height/2)/introScale);
+		}
+
+		// Clear
+		if(self.isIntro){
+			ctx.clearRect(self.player.x-100,self.player.y-100,200,200);
+			ctx.clearRect(self.key.x-100,self.key.y-100,200,200);
+			ctx.clearRect(self.door.x-100,self.door.y-100,200,200);
+		}else{
+			ctx.fillStyle = "#fff";
+			ctx.fillRect(0,0,self.width,self.height);
 		}
 
 		// Draw shadows
@@ -179,6 +186,8 @@ function Level(config,isIntro){
 		self.frames.push(frame);
 
 	}
+
+	var lastCollected = false;
 	self.playbackFrame = function(frameIndex){
 
 		var frame = self.frames[frameIndex];
@@ -194,6 +203,10 @@ function Level(config,isIntro){
 		self.door.frame = frame.door.frame;
 
 		self.keyCollected = frame.keyCollected;
+		if(self.keyCollected && !lastCollected && STAGE==3){
+			createjs.Sound.play("unlock");
+		}
+		lastCollected = self.keyCollected;
 
 		self.NO_CLOCK = true;
 		self.draw();
@@ -240,7 +253,7 @@ function Clock(countdown,level){
 			}
 			if(exitSide && enterSide){
 				if(exitSide == enterSide){
-					self.frame += self.framePerTick*1.7;
+					self.frame += self.framePerTick*1.8;
 				}
 			}
 		}
@@ -249,6 +262,7 @@ function Clock(countdown,level){
 
 		self.frame += self.framePerTick;
 		if(self.frame>=30){
+			createjs.Sound.play("error");
 			reset();
 		}
 
@@ -292,6 +306,9 @@ function DoorKey(config,level){
 		var distance = Math.sqrt(dx*dx/4 + dy*dy);
 		if(distance<5){
 			level.keyCollected = true;
+
+			createjs.Sound.play("unlock");
+
 		}
 
 	};
@@ -349,6 +366,8 @@ function Door(config,level){
 				if(level.isIntro){
 					
 					document.getElementById("whole_container").style.top = "-100%";
+
+					createjs.Sound.play("ding");
 
 					CURRENT_LEVEL = 0;
 					var lvl = new Level(LEVEL_CONFIG[CURRENT_LEVEL]);
@@ -439,7 +458,7 @@ function Peep(config,level){
 		if(Key.left || Key.right || Key.up || Key.down){
 			//if(self.frame==0) bounce=0.8;
 			self.frame++;
-			if(self.frame>8) self.frame=1;
+			if(self.frame>9) self.frame=1;
 		}else{
 			if(self.frame>0) self.bounce=0.8;
 			self.frame = 0;
@@ -499,7 +518,7 @@ function Peep(config,level){
 	var bounceVel = 0;
 	self.sway = 0;
 	var swayVel = 0;
-	var bouncy = [0.00, 0.25, 1.00, 0.90, 0.00, 0.25, 1.00, 0.90, 0.00];
+	var bouncy = [0.00, 0.25, 1.00, 0.90, 0.00, 0.00, 0.25, 1.00, 0.90, 0.00];
 	self.draw = function(ctx){
 		
 		var x = self.x;
@@ -507,7 +526,11 @@ function Peep(config,level){
 
 		// DRAW GOOFY BOUNCY DUDE //
 		
-		y += -4*bouncy[self.frame];
+		y += -6*bouncy[self.frame];
+
+		if(self.frame==4 || self.frame==9){
+			createjs.Sound.play("step",{volume:0.5});
+		}
 
 		ctx.save();
 		ctx.translate(x,y);
@@ -557,8 +580,19 @@ window.onload = function(){
 	addAsset("door","assets/door.png");
 	addAsset("clock","assets/clock.png");
 
+	addSound("ding","audio/ding.mp3");
+	addSound("rewind","audio/rewind.mp3");
+	addSound("jazz","audio/jazz.mp3");
+	addSound("step","audio/step.mp3");
+	addSound("unlock","audio/unlock.mp3");
+	addSound("error","audio/error.mp3");
+
 	onLoadAssets(function(){
-		
+
+		window.setTimeout(function(){
+			document.getElementById("loading").style.display = "none";
+		},300);
+
 		window.level = new Level(window.INTRO_LEVEL,true);
 
 		//////////
@@ -573,6 +607,18 @@ window.onload = function(){
 				}
 			}else if(STAGE==2||STAGE==3){
 				frameDirty = true;
+			}
+
+			if(STAGE==3 && !window.HAS_PLAYED_JAZZ){
+
+				if(STAGE==3 && CURRENT_LEVEL==1){
+					var framesLeft = (rewindLevel.frames.length-rewindFrame) + levelObjects[2].frames.length;
+					if(framesLeft<135){
+						window.HAS_PLAYED_JAZZ = true;
+						createjs.Sound.play("jazz");
+					}
+				}
+
 			}
 
 		}
@@ -650,6 +696,8 @@ function next(){
 	CURRENT_LEVEL++;
 	if(CURRENT_LEVEL<LEVEL_CONFIG.length){
 
+		createjs.Sound.play("ding");
+
 		var lvl = new Level(LEVEL_CONFIG[CURRENT_LEVEL]);
 		levelObjects[CURRENT_LEVEL] = lvl;
 		window.level = null;
@@ -662,6 +710,16 @@ function next(){
 		STAGE = 2;
 		CURRENT_LEVEL = 2;
 		startRewind();
+
+
+		var totalFrames = levelObjects[0].frames.length + levelObjects[1].frames.length + levelObjects[2].frames.length;
+		var totalRewindTime = totalFrames/60;
+		var extraTime = 6600 - totalRewindTime*1000;
+		if(extraTime<0){
+			createjs.Sound.play("rewind");
+		}else{
+			createjs.Sound.play("rewind","none",0,extraTime);
+		}
 
 		document.getElementById("rewind_text").style.display = 'block';
 
@@ -695,7 +753,7 @@ function iHeartYou(){
 	// No replay. Fuck it.
 	setTimeout(function(){
 		document.getElementById("whole_container").style.top = "-200%";
-	},7400);
+	},7300);
 	setTimeout(function(){
 		yourMessage.focus();
 	},8500);
