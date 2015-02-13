@@ -1,14 +1,17 @@
 <!doctype>
 <html>
 <head>
-	<title>it's aDOORable</title>
+	<title>it's a(door)able</title>
 	<link rel="stylesheet" type="text/css" href="css/index.css"> 
 </head>
 <body>
 	<div id="whole_container">
+
+		<!--span style="display:none"-->
 		<div id="screen_one">
 			<canvas id="canvas_intro"></canvas>
 		</div>
+
 		<div id="screen_two">
 			<div id="canvas_container">
 
@@ -16,87 +19,74 @@
 				<canvas id="canvas_2" width="300" height="380"></canvas>
 				<canvas id="canvas_3" width="300" height="380" style="margin:0"></canvas>
 				
-				<div id="valentines_text">
-					a special message from
-					<span id="valentines_from">nicky</span>
-					to
-					<span id="valentines_to">you</span>
-					&lt;3
-				</div>
+				<div id="valentines_text"></div>
 				<div id="rewind_text">rewinding...</div>
 				<div id="replay_text">playing back...</div>
 
 			</div>
 		</div>
+		<!--/span-->
+
+		<div id="screen_three">
+
+			<div id="bottom">
+				<a href="https://twitter.com/ncasenmare">made by @ncasenmare</a>
+				|
+				<a href="https://github.com/ncase/door">open source code</a>
+				|
+				<!--<a href="">behind-the-scenes</a>
+				|-->
+				<a href="https://gist.github.com/ncase/30139ddc1248e064f28f">full credits</a>
+			</div>
+
+			<div id="end_container">
+				
+				<span style="font-size:38px;">P.S: you can add your own personal message!</span>
+				<input id="your_message" placeholder="(enter lovely message)"></input>
+				
+				<span>then just copy &amp; send this link to your lover(s):</span>
+				<input id="your_link" readonly></input>
+
+				<span>or, if you wanna send your message out to everyone:</span>
+				<div id="share">
+					<div id="share_facebook" onclick="return socialShare.call(this,'facebook');"></div>
+					<div id="share_twitter" onclick="return socialShare.call(this,'twitter');"></div>
+					<div id="share_plus" onclick="return socialShare.call(this,'plus');"></div>
+					<div id="share_tumblr" onclick="return socialShare.call(this,'tumblr');"></div>
+					<div id="share_reddit" onclick="return socialShare.call(this,'reddit');"></div>
+					<div id="share_stumbleupon" onclick="return socialShare.call(this,'stumbleupon');"></div>
+				</div>
+
+				<span style="font-size:10px;color: #999;">
+					<span style="font-size: 19px;">and lastly, if you wanna show this</span>
+					<br>
+					<span style="font-size: 16px;">minigame's creator some love, you can</span>
+					<br>
+					<a href="https://www.patreon.com/ncase" target="_blank" style="text-decoration: none;">
+						<div id="support">support me on patreon</div>
+					</a>
+					<span style="font-size: 24px;">so I can keep making free</span>
+					<br>
+					<span style="font-size: 20px;">open-source playable silliness.</span>
+				</span>
+
+				<br>
+				<br>
+
+				<span style="font-size:30px">
+					thanks for playing! &lt;3
+				</span>
+
+			</div>
+		</div>
+		
 	</div>
 </body>
 </html>
 
 <script src="js/Key.js"></script>
 <script src="js/game.js"></script>
+<script src="js/popup.js"></script>
 <script>
-
-var introCanvas = document.getElementById("canvas_intro");
-introCanvas.width = window.innerWidth;
-introCanvas.height = window.innerHeight;
-var cx = window.innerWidth/2;
-var cy = window.innerHeight/2;
-
-window.INTRO_LEVEL = {
-
-	canvas:document.getElementById("canvas_intro"),
-	player:{ x:cx-150, y:cy-30 },
-	door:{ x:cx+150, y:cy-30 },
-	key:{ x:cx, y:cy+125 },
-	circles: [
-		{x:cx,y:cy,radius:120,invisible:true}
-	]
-
-};
-
-window.LEVEL_CONFIG = [
-
-	// I
-	{
-		canvas:document.getElementById("canvas_1"),
-		player:{ x:150, y:175 },
-		door:{ x:150, y:75 },
-		key:{ x:150, y:275 },
-		circles: [
-			{x:0,y:150,radius:100},
-			{x:300,y:150,radius:100}
-		],
-		countdown:90
-	},
-
-	// HEART
-	{
-		canvas:document.getElementById("canvas_2"),
-		player:{ x:150, y:250 },
-		door:{ x:150, y:249 },
-		key:{ x:150, y:75 },
-		circles: [
-			{x:100,y:100,radius:50},
-			{x:200,y:100,radius:50},
-			{x:150,y:100,radius:10,invisible:true},
-			{x:0,y:300,radius:145},
-			{x:300,y:300,radius:145}
-		],
-		// SUPER HACK - for level 2, change timer so it's impossible to beat if you go BACKWARDS.
-		countdown: 190
-	},
-
-	// U
-	{
-		canvas:document.getElementById("canvas_3"),
-		player:{ x:30, y:75 },
-		door:{ x:270, y:75 },
-		key:{ x:150, y:270 },
-		circles: [
-			{x:150,y:150,radius:115}
-		],
-		countdown: 130
-	}
-
-];
+//STAGE = 4;
 </script>

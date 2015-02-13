@@ -240,7 +240,7 @@ function Clock(countdown,level){
 			}
 			if(exitSide && enterSide){
 				if(exitSide == enterSide){
-					self.frame += self.framePerTick*1.5;
+					self.frame += self.framePerTick*1.7;
 				}
 			}
 		}
@@ -681,8 +681,11 @@ function iHeartYou(){
 
 	var vtext = document.getElementById("valentines_text");
 	vtext.style.display = "block";
-	document.getElementById("valentines_from").textContent = "nicky";
-	document.getElementById("valentines_to").textContent = "(recipient)";
+	if(window.location.hash){
+		vtext.textContent = encryptString(window.location.hash.substring(1));
+	}else{
+		vtext.textContent = "a lovely message from me to you <3";
+	}
 
 	setTimeout(function(){
 		vtext.style.letterSpacing = "3px";
@@ -690,6 +693,9 @@ function iHeartYou(){
 
 	// After 9 seconds, swipe down to CREDITS.
 	// No replay. Fuck it.
+	setTimeout(function(){
+		document.getElementById("whole_container").style.top = "-200%";
+	},7400);
 
 }
 
@@ -716,3 +722,155 @@ function reset(){
 		window.level = lvl;
 	},500);
 }
+
+///////////////////////////////////////////////////////////////////
+
+// Simple XOR encryption (key = 1)
+// The only purpose is to obscure it in the hash
+
+function encryptString(string){
+	var result = "";
+	for(var i=0;i<string.length;i++){
+		result += String.fromCharCode(string.charCodeAt(i)^1);
+	}
+	return result;
+}
+function decryptString(string){
+	return encryptString(string); // it's XOR, duh
+}
+
+var yourMessage = document.getElementById("your_message");
+var yourLink = document.getElementById("your_link");
+function linkChangey(){
+	if(yourMessage.value==""){
+		yourLink.value = "http://ncase.me/door/";
+	}else{
+		yourLink.value = "http://ncase.me/door/#"+encryptString(yourMessage.value);
+	}
+};
+yourMessage.onchange = linkChangey;
+yourMessage.oninput = linkChangey;
+linkChangey();
+yourLink.onclick = function(){
+	yourLink.select();
+};
+
+function socialShare(type){
+
+	var link = yourLink.value;
+	var title = "it's a(door)able";
+	var url = "";
+	var width = 640;
+	var height = 480;
+
+	switch(type){
+		case "facebook":
+			url += "https://www.facebook.com/sharer.php?u="+encodeURIComponent(link);
+			url += "&t="+encodeURIComponent("A message for all my dear friends. This minigame only takes a minute to play, check it out! it's a(door)able --");
+			width = 626;
+			height = 436;
+			break;
+		case "twitter":
+			url += "https://twitter.com/share?url="+encodeURIComponent(link);
+			url += "&text="+encodeURIComponent("A message for all my dear followers."); // add twitter pic.
+			url += "&via=ncasenmare";
+			width = 640;
+			height = 400;
+			break;
+		case "plus":
+			url += "https://plus.google.com/share?url="+encodeURIComponent(link);
+			width = 600;
+			height = 460;
+			break;
+		case "tumblr":
+			url += "https://www.tumblr.com/share/link?url="+encodeURIComponent(link);
+			url += "&name="+encodeURIComponent("it's a(door)able");
+			url += "&description="+encodeURIComponent("A message for all my dear followers.");
+			width = 446;
+			height = 430;
+			break;
+		case "reddit":
+			window.open('http://www.reddit.com/submit?v=5&amp;noui&amp;jump=close&amp;url='+encodeURIComponent(link)+'&amp;title='+encodeURIComponent("it's a(door)able: a one-minute minigame"), "reddit",'toolbar=no,width=700,height=550');
+			return false;
+			break;
+		case "stumbleupon":
+			url += "http://www.stumbleupon.com/submit?url="+encodeURIComponent(link);
+			break;
+	}
+
+	return sharePopup.call(this,event,{
+		href: url,
+		width: width,
+		height: height
+	});
+
+}
+
+
+///////////////////////////////////////////////////////////////////
+
+
+var introCanvas = document.getElementById("canvas_intro");
+introCanvas.width = window.innerWidth;
+introCanvas.height = window.innerHeight;
+var cx = window.innerWidth/2;
+var cy = window.innerHeight/2;
+
+window.INTRO_LEVEL = {
+
+	canvas:document.getElementById("canvas_intro"),
+	player:{ x:cx-150, y:cy-30 },
+	door:{ x:cx+150, y:cy-30 },
+	key:{ x:cx, y:cy+125 },
+	circles: [
+		{x:cx,y:cy,radius:120,invisible:true}
+	]
+
+};
+
+window.LEVEL_CONFIG = [
+
+	// I
+	{
+		canvas:document.getElementById("canvas_1"),
+		player:{ x:150, y:175 },
+		door:{ x:150, y:75 },
+		key:{ x:150, y:275 },
+		circles: [
+			{x:0,y:150,radius:100},
+			{x:300,y:150,radius:100}
+		],
+		countdown:90
+	},
+
+	// HEART
+	{
+		canvas:document.getElementById("canvas_2"),
+		player:{ x:150, y:250 },
+		door:{ x:150, y:249 },
+		key:{ x:150, y:75 },
+		circles: [
+			{x:100,y:100,radius:50},
+			{x:200,y:100,radius:50},
+			{x:150,y:100,radius:10,invisible:true},
+			{x:0,y:300,radius:145},
+			{x:300,y:300,radius:145}
+		],
+		// SUPER HACK - for level 2, change timer so it's impossible to beat if you go BACKWARDS.
+		countdown: 200
+	},
+
+	// U
+	{
+		canvas:document.getElementById("canvas_3"),
+		player:{ x:30, y:75 },
+		door:{ x:270, y:75 },
+		key:{ x:150, y:270 },
+		circles: [
+			{x:150,y:150,radius:115}
+		],
+		countdown: 130
+	}
+
+];
+
