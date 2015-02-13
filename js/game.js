@@ -740,7 +740,7 @@ function iHeartYou(){
 	var vtext = document.getElementById("valentines_text");
 	vtext.style.display = "block";
 	if(window.location.hash){
-		vtext.textContent = encryptString(window.location.hash.substring(1));
+		vtext.textContent = encryptString(decodeURIComponent(window.location.hash).substring(1));
 	}else{
 		vtext.textContent = "a lovely message from me to you <3";
 	}
@@ -806,7 +806,7 @@ function linkChangey(){
 	if(yourMessage.value==""){
 		yourLink.value = "http://ncase.me/door/";
 	}else{
-		yourLink.value = "http://ncase.me/door/#"+encryptString(yourMessage.value);
+		yourLink.value = "http://ncase.me/door/#"+encodeURIComponent(encryptString(yourMessage.value));
 	}
 };
 yourMessage.onchange = linkChangey;
