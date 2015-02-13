@@ -30,7 +30,7 @@
 
 	<div id="whole_container">
 
-		<!--span style="display:none"-->
+		<span style="display:none">
 		<div id="screen_one">
 			<canvas id="canvas_intro"></canvas>
 		</div>
@@ -48,7 +48,7 @@
 
 			</div>
 		</div>
-		<!--/span-->
+		</span>
 
 		<div id="screen_three">
 
@@ -68,12 +68,12 @@
 
 				<span>or, if you wanna send your message out to everyone:</span>
 				<div id="share">
-					<div id="share_facebook" onclick="return socialShare.call(this,'facebook');"></div>
-					<div id="share_twitter" onclick="return socialShare.call(this,'twitter');"></div>
-					<div id="share_plus" onclick="return socialShare.call(this,'plus');"></div>
-					<div id="share_tumblr" onclick="return socialShare.call(this,'tumblr');"></div>
-					<div id="share_reddit" onclick="return socialShare.call(this,'reddit');"></div>
-					<div id="share_stumbleupon" onclick="return socialShare.call(this,'stumbleupon');"></div>
+					<div id="share_facebook" onclick="return socialShare.call(this,event,'facebook');"></div>
+					<div id="share_twitter" onclick="return socialShare.call(this,event,'twitter');"></div>
+					<div id="share_plus" onclick="return socialShare.call(this,event,'plus');"></div>
+					<div id="share_tumblr" onclick="return socialShare.call(this,event,'tumblr');"></div>
+					<div id="share_reddit" onclick="return socialShare.call(this,event,'reddit');"></div>
+					<div id="share_stumbleupon" onclick="return socialShare.call(this,event,'stumbleupon');"></div>
 				</div>
 
 				<span style="font-size:10px;color: #999;">
@@ -109,5 +109,5 @@
 <script src="js/soundjs-0.6.0.min.js"></script>
 
 <script>
-//STAGE = 4;
+STAGE = 4;
 </script>

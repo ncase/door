@@ -816,7 +816,7 @@ yourLink.onclick = function(){
 	yourLink.select();
 };
 
-function socialShare(type){
+function socialShare(event,type){
 
 	var link = yourLink.value;
 	var title = "it's a(door)able";
