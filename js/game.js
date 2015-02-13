@@ -833,7 +833,7 @@ function socialShare(event,type){
 			break;
 		case "twitter":
 			url += "https://twitter.com/share?url="+encodeURIComponent(link);
-			url += "&text="+encodeURIComponent("A lovely message for all my dear followers, in this 1-min minigame: http://pic.twitter.com/DK5vnPzEVn"); // add twitter pic.
+			url += "&text="+encodeURIComponent("A lovely message for all my dear followers, in this 1-min minigame:"); // add twitter pic.
 			url += "&via=ncasenmare";
 			width = 640;
 			height = 400;
