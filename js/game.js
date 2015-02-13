@@ -22,9 +22,10 @@ function addAsset(name,src){
 
 //////////////
 
-function Level(config){
+function Level(config,isIntro){
 
 	var self = this;
+	self.isIntro = isIntro;
 
 	self.circles = config.circles;
 	self.player = new Peep(config.player,self);
@@ -35,7 +36,12 @@ function Level(config){
 	self.canvas = config.canvas;
 	self.ctx = self.canvas.getContext('2d');
 	self.width = self.canvas.width;
-	self.height = self.canvas.height - 80;
+
+	if(self.isIntro){
+		self.height = self.canvas.height;
+	}else{
+		self.height = self.canvas.height - 80;
+	}
 
 	self.pathCanvas = document.createElement("canvas");
 	self.pathCanvas.width = self.width;
@@ -50,13 +56,16 @@ function Level(config){
 		self.key.update();
 
 		var output = self.door.update();
-		if(output=="END_LEVEL"){
-			self.ctx.clearRect(0,self.height,self.canvas.width,80);
+		if(self.isIntro){
+			STAGE = 1;
 		}else{
-			self.clock.update();
+			if(output=="END_LEVEL"){
+				self.ctx.clearRect(0,self.height,self.canvas.width,80);
+			}else{
+				self.clock.update();
+			}
+			self.recordFrame();
 		}
-
-		self.recordFrame();
 
 	};
 
@@ -66,8 +75,21 @@ function Level(config){
 		var ctx = self.ctx;
 
 		// Clear
-		ctx.fillStyle = "#fff";
-		ctx.fillRect(0,0,self.width,self.height);
+		if(self.isIntro){
+			ctx.clearRect(0,0,self.width,self.height);
+		}else{
+			ctx.fillStyle = "#fff";
+			ctx.fillRect(0,0,self.width,self.height);
+		}
+
+		// BIGGER EVERYTHING
+		if(self.isIntro){
+			ctx.save();
+			var introScale = 1.5;
+			ctx.scale(introScale,introScale);
+			ctx.translate(-self.width/2,-self.height/2);
+			ctx.translate((self.width/2)/introScale,(self.height/2)/introScale);
+		}
 
 		// Draw shadows
 		var objects = [self.player,self.key,self.door];
@@ -120,8 +142,16 @@ function Level(config){
 		}
 
 		// CLOCK
-		ctx.clearRect(0,self.height,self.canvas.width,80);
-		if(!self.NO_CLOCK) self.clock.draw(ctx);
+		if(self.isIntro){
+		}else{
+			ctx.clearRect(0,self.height,self.canvas.width,80);
+			if(!self.NO_CLOCK) self.clock.draw(ctx);
+		}
+
+		// BIGGER EVERYTHING
+		if(self.isIntro){
+			ctx.restore();
+		}
 
 	};
 
@@ -210,7 +240,7 @@ function Clock(countdown,level){
 			}
 			if(exitSide && enterSide){
 				if(exitSide == enterSide){
-					self.frame += self.framePerTick*0.7;
+					self.frame += self.framePerTick*1.5;
 				}
 			}
 		}
@@ -289,7 +319,7 @@ function DoorKey(config,level){
 		ctx.scale(1*scale,0.3*scale);
 		ctx.beginPath();
 		ctx.arc(0, 0, 15, 0, Math.TAU, false);
-		ctx.fillStyle = '#bbb';
+		ctx.fillStyle = 'rgba(100,100,100,0.4)';
 		ctx.fill();
 		ctx.restore();
 
@@ -316,8 +346,23 @@ function Door(config,level){
 			var dy = self.y-level.player.y;
 			var distance = Math.sqrt(dx*dx/25 + dy*dy);
 			if(distance<6){
-				next();
-				return "END_LEVEL";
+				if(level.isIntro){
+					
+					document.getElementById("whole_container").style.top = "-100%";
+
+					CURRENT_LEVEL = 0;
+					var lvl = new Level(LEVEL_CONFIG[CURRENT_LEVEL]);
+					levelObjects[CURRENT_LEVEL] = lvl;
+					window.level = null;
+					setTimeout(function(){
+						window.level = lvl;
+					},1200);
+
+					return "END_LEVEL";
+				}else{
+					next();
+					return "END_LEVEL";
+				}
 			}
 		}
 
@@ -349,7 +394,7 @@ function Door(config,level){
 		ctx.scale(1,0.2);
 		ctx.beginPath();
 		ctx.arc(0, 0, 30, 0, Math.TAU, false);
-		ctx.fillStyle = '#bbb';
+		ctx.fillStyle = 'rgba(100,100,100,0.4)';
 		ctx.fill();
 		ctx.restore();
 
@@ -396,7 +441,7 @@ function Peep(config,level){
 			self.frame++;
 			if(self.frame>8) self.frame=1;
 		}else{
-			if(self.frame>0) bounce=0.8;
+			if(self.frame>0) self.bounce=0.8;
 			self.frame = 0;
 		}
 
@@ -490,7 +535,7 @@ function Peep(config,level){
 		ctx.scale(1*scale,0.3*scale);
 		ctx.beginPath();
 		ctx.arc(0, 0, 20, 0, Math.TAU, false);
-		ctx.fillStyle = '#bbb';
+		ctx.fillStyle = 'rgba(100,100,100,0.4)';
 		ctx.fill();
 		ctx.restore();
 
@@ -514,12 +559,14 @@ window.onload = function(){
 
 	onLoadAssets(function(){
 		
-		reset();
+		window.level = new Level(window.INTRO_LEVEL,true);
+
+		//////////
 
 		var frameDirty = false;
 		function update(){
 
-			if(STAGE==1){
+			if(STAGE==0 || STAGE==1){
 				if(level){
 					level.update();
 					frameDirty = true;
@@ -531,7 +578,7 @@ window.onload = function(){
 		}
 		function render(){
 
-			if(STAGE==1){
+			if(STAGE==0 || STAGE==1){
 
 				if(level){
 					level.draw();
@@ -551,6 +598,10 @@ window.onload = function(){
 						STAGE = 3;
 						CURRENT_LEVEL = 0;
 						startPlayback();
+
+						document.getElementById("rewind_text").style.display = 'none';
+						document.getElementById("replay_text").style.display = "block";
+
 					}
 				}
 
@@ -563,8 +614,11 @@ window.onload = function(){
 					if(CURRENT_LEVEL<3){
 						startPlayback();
 					}else{
+
+						document.getElementById("replay_text").style.display = "none";
 						iHeartYou();
 						STAGE = 4;
+
 					}
 				}
 
@@ -584,7 +638,7 @@ window.onload = function(){
 
 };
 
-var STAGE = 1;
+var STAGE = 0;
 // 0 - Intro
 // 1 - Play levels in order
 // 2 - Rewind levels
@@ -608,6 +662,9 @@ function next(){
 		STAGE = 2;
 		CURRENT_LEVEL = 2;
 		startRewind();
+
+		document.getElementById("rewind_text").style.display = 'block';
+
 	}
 }
 

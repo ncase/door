@@ -5,21 +5,28 @@
 	<link rel="stylesheet" type="text/css" href="css/index.css"> 
 </head>
 <body>
-	<div id="screen_two">
-		<div id="canvas_container">
+	<div id="whole_container">
+		<div id="screen_one">
+			<canvas id="canvas_intro"></canvas>
+		</div>
+		<div id="screen_two">
+			<div id="canvas_container">
 
-			<canvas id="canvas" width="300" height="380"></canvas>
-			<canvas id="canvas_2" width="300" height="380"></canvas>
-			<canvas id="canvas_3" width="300" height="380" style="margin:0"></canvas>
-			
-			<div id="valentines_text">
-				happy valentine's day, from
-				<span id="valentines_from">nicky</span>
-				to
-				<span id="valentines_to">you</span>
-				&lt;3
+				<canvas id="canvas_1" width="300" height="380"></canvas>
+				<canvas id="canvas_2" width="300" height="380"></canvas>
+				<canvas id="canvas_3" width="300" height="380" style="margin:0"></canvas>
+				
+				<div id="valentines_text">
+					a special message from
+					<span id="valentines_from">nicky</span>
+					to
+					<span id="valentines_to">you</span>
+					&lt;3
+				</div>
+				<div id="rewind_text">rewinding...</div>
+				<div id="replay_text">playing back...</div>
+
 			</div>
-
 		</div>
 	</div>
 </body>
@@ -28,11 +35,30 @@
 <script src="js/Key.js"></script>
 <script src="js/game.js"></script>
 <script>
+
+var introCanvas = document.getElementById("canvas_intro");
+introCanvas.width = window.innerWidth;
+introCanvas.height = window.innerHeight;
+var cx = window.innerWidth/2;
+var cy = window.innerHeight/2;
+
+window.INTRO_LEVEL = {
+
+	canvas:document.getElementById("canvas_intro"),
+	player:{ x:cx-150, y:cy-30 },
+	door:{ x:cx+150, y:cy-30 },
+	key:{ x:cx, y:cy+125 },
+	circles: [
+		{x:cx,y:cy,radius:120,invisible:true}
+	]
+
+};
+
 window.LEVEL_CONFIG = [
 
 	// I
 	{
-		canvas:document.getElementById("canvas"),
+		canvas:document.getElementById("canvas_1"),
 		player:{ x:150, y:175 },
 		door:{ x:150, y:75 },
 		key:{ x:150, y:275 },
@@ -40,24 +66,24 @@ window.LEVEL_CONFIG = [
 			{x:0,y:150,radius:100},
 			{x:300,y:150,radius:100}
 		],
-		countdown:80
+		countdown:90
 	},
 
 	// HEART
 	{
 		canvas:document.getElementById("canvas_2"),
 		player:{ x:150, y:250 },
-		door:{ x:150, y:240 },
+		door:{ x:150, y:249 },
 		key:{ x:150, y:75 },
 		circles: [
 			{x:100,y:100,radius:50},
 			{x:200,y:100,radius:50},
 			{x:150,y:100,radius:10,invisible:true},
-			{x:0-15,y:100,radius:50},
-			{x:300+15,y:100,radius:50},
+			{x:0,y:300,radius:145},
+			{x:300,y:300,radius:145}
 		],
 		// SUPER HACK - for level 2, change timer so it's impossible to beat if you go BACKWARDS.
-		countdown: 240
+		countdown: 190
 	},
 
 	// U
@@ -69,7 +95,7 @@ window.LEVEL_CONFIG = [
 		circles: [
 			{x:150,y:150,radius:115}
 		],
-		countdown: 120
+		countdown: 130
 	}
 
 ];
