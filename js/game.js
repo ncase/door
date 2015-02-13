@@ -696,6 +696,9 @@ function iHeartYou(){
 	setTimeout(function(){
 		document.getElementById("whole_container").style.top = "-200%";
 	},7400);
+	setTimeout(function(){
+		yourMessage.focus();
+	},8500);
 
 }
 
