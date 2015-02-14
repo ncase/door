@@ -580,6 +580,7 @@ window.onload = function(){
 	addAsset("door","assets/door.png");
 	addAsset("clock","assets/clock.png");
 
+	createjs.Sound.alternateExtensions = ["ogg"];
 	addSound("ding","audio/ding.mp3");
 	addSound("rewind","audio/rewind.mp3");
 	addSound("jazz","audio/jazz.mp3");
