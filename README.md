@@ -1,4 +1,4 @@
-![](https://raw.githubusercontent.com/ncase/door/gh-pages/thumbnail.png)
+[![](https://raw.githubusercontent.com/ncase/door/gh-pages/thumbnail.png)](http://patreon.com/ncase)
 
 **Designed & developed by [Nicky Case](http://ncase.me/) in two-ish days.**
 
