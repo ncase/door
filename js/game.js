@@ -20,6 +20,7 @@ function addAsset(name,src){
 	images[name].src = src;
 }
 function addSound(name,src){
+
 	assetsLeft++;
 	createjs.Sound.addEventListener("fileload", onAssetLoaded);
 	createjs.Sound.registerSound({src:src, id:name});
@@ -743,7 +744,7 @@ function iHeartYou(){
 	if(window.location.hash){
 		vtext.textContent = encryptString(decodeURIComponent(window.location.hash).substring(1));
 	}else{
-		vtext.textContent = "a lovely message from me to you <3";
+		vtext.textContent = "我想对你说: 我爱你!";
 	}
 
 	setTimeout(function(){
@@ -789,6 +790,7 @@ function reset(){
 
 // Simple XOR encryption (key = 1)
 // The only purpose is to obscure it in the hash
+//
 
 function encryptString(string){
 	var result = "";
@@ -805,32 +807,33 @@ var yourMessage = document.getElementById("your_message");
 var yourLink = document.getElementById("your_link");
 function linkChangey(){
 	if(yourMessage.value==""){
-		yourLink.value = "http://ncase.me/door/";
+		yourLink.value = "http://door.intyut.cn/";
 	}else{
-		yourLink.value = "http://ncase.me/door/#"+encodeURIComponent(encryptString(yourMessage.value));
+		yourLink.value = "http://door.intyut.cn/#"+encodeURIComponent(encryptString(yourMessage.value));
+
 	}
 };
 yourMessage.onchange = linkChangey;
 yourMessage.oninput = linkChangey;
+// 获取一下
 linkChangey();
 yourLink.onclick = function(){
 	yourLink.select();
 };
 
 function socialShare(event,type){
-
-	var link = yourLink.value;
-	var title = "it's a(door)able";
+var link = yourLink.value;
+	var title = "神奇的门";
 	var url = "";
 	var width = 640;
 	var height = 480;
 
 	switch(type){
-		case "facebook":
-			url += "https://www.facebook.com/sharer.php?u="+encodeURIComponent(link);
-			url += "&t="+encodeURIComponent("A lovely message for all my dear friends. This minigame only takes a minute to play, check it out! it's a(door)able --");
-			width = 626;
-			height = 436;
+		case "qqzone":
+            var url = 'http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?';
+            url += 'url=' + encodeURIComponent(link||document.location);   //参数url设置分享的内容链接|默认当前页location
+            url += '&showcount=' + 0||0;      //参数showcount是否显示分享总数,显示：'1'，不显示：'0'，默认不显示
+            url += '&desc=' + encodeURIComponent('神奇的门,一个一分钟小游戏!快来玩耍一下把');    //参数desc设置分享的描述，可选参数
 			break;
 		case "twitter":
 			url += "https://twitter.com/share?url="+encodeURIComponent(link);
