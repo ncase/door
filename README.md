@@ -8,6 +8,9 @@ All code and art dedicated to the public domain.
 If you'd like to help me keep making free, open-source playable silliness,
 please check out [my Patreon!](http://patreon.com/ncase) Thank you. <3
 
+** 由 liuyinxin 翻译
+[my github](https://github.com/SuperLiuYinXin)
+
 ---
 
 **Asset Credits:**
@@ -19,3 +22,4 @@ please check out [my Patreon!](http://patreon.com/ncase) Thank you. <3
 * SFX Rewind: http://freesound.org/people/kasa90/sounds/174363/ (CC ZERO)
 * SFX Unlock: http://freesound.org/people/keweldog/sounds/181140/ (CC ZERO)
 * Social Media Icons: http://customizr.net/icons/
+

@@ -15,15 +15,18 @@
 
 	// Event Handling
 	var onKeyDown = function(event){
-		var code = KEY_CODES[event.keyCode];
+		var code = KEY_CODES[event.which];
 	    Key[code] = true;
 	    if(window.STAGE==4) return;
-	    event.stopPropagation();
+        console.log(code);
+
+        event.stopPropagation();
 	    event.preventDefault();
 	}
 	var onKeyUp = function(event){
-		var code = KEY_CODES[event.keyCode];
+		var code = KEY_CODES[event.which];
 	    Key[code] = false;
+        console.log(code);
 	    if(window.STAGE==4) return;
 	    event.stopPropagation();
 	    event.preventDefault();
