@@ -839,11 +839,6 @@ function socialShare(event,type){
 			width = 640;
 			height = 400;
 			break;
-		case "plus":
-			url += "https://plus.google.com/share?url="+encodeURIComponent(link);
-			width = 600;
-			height = 460;
-			break;
 		case "tumblr":
 			url += "https://www.tumblr.com/share/link?url="+encodeURIComponent(link);
 			url += "&name="+encodeURIComponent("it's a(door)able");
